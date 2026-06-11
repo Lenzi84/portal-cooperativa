@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Portal Cooperativa{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🌾</div>
+            <span>Cooperativa</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+            <li><a href="#">📋 Relatórios</a></li>
+            <li><a href="{% url 'lista_cooperados' %}">👥 Cooperados</a></li>
+            <li><a href="#">📦 Estoque</a></li>
+            <li><a href="#">⚙ Configurações</a></li>
+        </ul>
+        <div class="sidebar-logout">
+            <a href="{% url 'logout' %}" class="btn-logout">
+                ↩ Sair do sistema
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Visão geral do sistema</p>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-badge">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    <div class="user-info">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-role">{% if user.is_superuser %}Administrador{% else %}Colaborador{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                <h2>Bem-vindo, {{ user.username }}! 👋</h2>
+                <p>Você está na área restrita do Portal da Cooperativa. Seu acesso está autenticado e sua sessão está ativa.</p>
+            </div>
+            <div class="welcome-badge">✓ Sessão ativa</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <span class="stat-value">248</span>
+                    <span class="stat-label">Cooperados</span>
+                </div>
+                <div class="stat-trend up">+12%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-info">
+                    <span class="stat-value">1.340</span>
+                    <span class="stat-label">Itens em estoque</span>
+                </div>
+                <div class="stat-trend up">+5%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-info">
+                    <span class="stat-value">37</span>
+                    <span class="stat-label">Relatórios pendentes</span>
+                </div>
+                <div class="stat-trend down">-3</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <span class="stat-value">R$ 892k</span>
+                    <span class="stat-label">Faturamento mensal</span>
+                </div>
+                <div class="stat-trend up">+8%</div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Informações da Sessão</h3>
+                <ul class="info-list">
+                    <li><span class="info-label">Usuário:</span><span class="info-value">{{ user.username }}</span></li>
+                    <li><span class="info-label">E-mail:</span><span class="info-value">{{ user.email|default:"Não informado" }}</span></li>
+                    <li><span class="info-label">Superusuário:</span><span class="info-value">{% if user.is_superuser %}Sim{% else %}Não{% endif %}</span></li>
+                    <li><span class="info-label">Último login:</span><span class="info-value">{{ user.last_login|date:"d/m/Y H:i" }}</span></li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Segurança</h3>
+                <ul class="info-list">
+                    <li><span class="info-label">Autenticação:</span><span class="info-value status-ok">✓ Verificada</span></li>
+                    <li><span class="info-label">Sessão:</span><span class="info-value status-ok">✓ Ativa</span></li>
+                    <li><span class="info-label">Senha:</span><span class="info-value status-ok">✓ Criptografada (hash)</span></li>
+                    <li><span class="info-label">CSRF:</span><span class="info-value status-ok">✓ Protegido</span></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

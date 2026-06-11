@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Excluir Cooperado — Portal Cooperativa{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🌾</div>
+            <span>Cooperativa</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+            <li class="active"><a href="{% url 'lista_cooperados' %}">👥 Cooperados</a></li>
+        </ul>
+        <div class="sidebar-logout">
+            <a href="{% url 'logout' %}" class="btn-logout">↩ Sair do sistema</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title">Confirmar Exclusão</h1>
+            </div>
+        </header>
+
+        <div class="form-card confirm-card">
+            <div class="confirm-icon">⚠️</div>
+            <h2>Tem certeza?</h2>
+            <p>Você está prestes a excluir o cooperado <strong>{{ cooperado.nome }}</strong> (CPF: {{ cooperado.cpf }}).</p>
+            <p class="confirm-warning">Esta ação não pode ser desfeita.</p>
+            <form method="post" class="confirm-actions">
+                {% csrf_token %}
+                <a href="{% url 'lista_cooperados' %}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-danger">Sim, excluir</button>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

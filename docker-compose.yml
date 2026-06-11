@@ -1,0 +1,43 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB:       portal_cooperativa
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY:    local-secret-key-troque-em-producao
+      DEBUG:         "True"
+      ALLOWED_HOSTS: "*"
+      DB_NAME:       portal_cooperativa
+      DB_USER:       postgres
+      DB_PASSWORD:   postgres
+      DB_HOST:       db
+      DB_PORT:       "5432"
+      DB_SSLMODE:    disable
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:

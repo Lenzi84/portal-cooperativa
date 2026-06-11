@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Cooperados — Portal Cooperativa{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🌾</div>
+            <span>Cooperativa</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+            <li class="active"><a href="{% url 'lista_cooperados' %}">👥 Cooperados</a></li>
+            <li><a href="#">📋 Relatórios</a></li>
+            <li><a href="#">📦 Estoque</a></li>
+            <li><a href="#">⚙ Configurações</a></li>
+        </ul>
+        <div class="sidebar-logout">
+            <a href="{% url 'logout' %}" class="btn-logout">↩ Sair do sistema</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title">Cooperados</h1>
+                <p class="page-subtitle">Gestão de cooperados cadastrados</p>
+            </div>
+            <div class="top-bar-right">
+                <a href="{% url 'criar_cooperado' %}" class="btn-primary">+ Novo Cooperado</a>
+            </div>
+        </header>
+
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="crud-toolbar">
+            <form method="get" class="search-form">
+                <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome ou CPF…" class="search-input">
+                <button type="submit" class="btn-search">Buscar</button>
+                {% if q %}<a href="{% url 'lista_cooperados' %}" class="btn-clear">✕ Limpar</a>{% endif %}
+            </form>
+        </div>
+
+        <div class="table-card">
+            {% if cooperados %}
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Situação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cooperados %}
+                    <tr>
+                        <td><strong>{{ c.nome }}</strong></td>
+                        <td>{{ c.cpf }}</td>
+                        <td>{{ c.email }}</td>
+                        <td>{{ c.telefone }}</td>
+                        <td><span class="badge badge-{{ c.situacao }}">{{ c.get_situacao_display }}</span></td>
+                        <td class="actions-cell">
+                            <a href="{% url 'detalhe_cooperado' c.pk %}" class="btn-action btn-view" title="Ver">👁</a>
+                            <a href="{% url 'editar_cooperado' c.pk %}" class="btn-action btn-edit" title="Editar">✏️</a>
+                            <a href="{% url 'excluir_cooperado' c.pk %}" class="btn-action btn-delete" title="Excluir">🗑</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <p>Nenhum cooperado encontrado{% if q %} para "{{ q }}"{% endif %}.</p>
+                {% if not q %}<a href="{% url 'criar_cooperado' %}" class="btn-primary">Cadastrar primeiro cooperado</a>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

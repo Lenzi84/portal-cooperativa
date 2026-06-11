@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} — Portal Cooperativa{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🌾</div>
+            <span>Cooperativa</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+            <li class="active"><a href="{% url 'lista_cooperados' %}">👥 Cooperados</a></li>
+            <li><a href="#">📋 Relatórios</a></li>
+            <li><a href="#">📦 Estoque</a></li>
+            <li><a href="#">⚙ Configurações</a></li>
+        </ul>
+        <div class="sidebar-logout">
+            <a href="{% url 'logout' %}" class="btn-logout">↩ Sair do sistema</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title">{{ titulo }}</h1>
+                <p class="page-subtitle">
+                    <a href="{% url 'lista_cooperados' %}" class="breadcrumb-link">Cooperados</a> / {{ titulo }}
+                </p>
+            </div>
+        </header>
+
+        <div class="form-card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_nome">Nome completo *</label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}<div class="field-error">{{ form.nome.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_cpf">CPF *</label>
+                        {{ form.cpf }}
+                        {% if form.cpf.errors %}<div class="field-error">{{ form.cpf.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email">E-mail *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_telefone">Telefone *</label>
+                        {{ form.telefone }}
+                        {% if form.telefone.errors %}<div class="field-error">{{ form.telefone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_data_entrada">Data de entrada *</label>
+                        {{ form.data_entrada }}
+                        {% if form.data_entrada.errors %}<div class="field-error">{{ form.data_entrada.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_situacao">Situação *</label>
+                        {{ form.situacao }}
+                        {% if form.situacao.errors %}<div class="field-error">{{ form.situacao.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label for="id_observacoes">Observações</label>
+                        {{ form.observacoes }}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'lista_cooperados' %}" class="btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

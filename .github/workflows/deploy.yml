@@ -1,0 +1,144 @@
+name: CI/CD — Build e Deploy no Azure
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Altere estes valores para os seus recursos Azure
+  AZURE_REGISTRY:     ${{ secrets.AZURE_REGISTRY }}        # ex: acraula123.azurecr.io
+  IMAGE_NAME:         portal-cooperativa
+  WEBAPP_NAME:        ${{ secrets.AZURE_WEBAPP_NAME }}      # ex: webapp-aula123
+  RESOURCE_GROUP:     ${{ secrets.AZURE_RESOURCE_GROUP }}   # ex: rg-python-aula
+
+jobs:
+  # ──────────────────────────────────────────────
+  # JOB 1 — Testes e lint básicos
+  # ──────────────────────────────────────────────
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB:       portal_cooperativa
+          POSTGRES_USER:     postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_NAME:     portal_cooperativa
+      DB_USER:     postgres
+      DB_PASSWORD: postgres
+      DB_HOST:     localhost
+      DB_PORT:     5432
+      DB_SSLMODE:  disable
+      SECRET_KEY:  ci-secret-key-insecure
+      DEBUG:       True
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Executar migrações
+        run: python manage.py migrate --noinput
+
+      - name: Rodar testes
+        run: python manage.py test
+
+  # ──────────────────────────────────────────────
+  # JOB 2 — Build e Push da imagem Docker para ACR
+  # ──────────────────────────────────────────────
+  build-and-push:
+    name: Build e Push para ACR
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.AZURE_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Gerar tag da imagem
+        id: meta
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "tags=${{ env.AZURE_REGISTRY }}/${{ env.IMAGE_NAME }}:${SHORT_SHA},${{ env.AZURE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build e Push da imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+  # ──────────────────────────────────────────────
+  # JOB 3 — Deploy no Azure Web App for Containers
+  # ──────────────────────────────────────────────
+  deploy:
+    name: Deploy no Azure
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Login no Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy no Web App for Containers
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name:   ${{ env.WEBAPP_NAME }}
+          images:     ${{ env.AZURE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Aplicar migrações via Azure CLI
+        run: |
+          az webapp ssh --name ${{ env.WEBAPP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --command "python manage.py migrate --noinput" || true
+        # O || true evita falha caso o SSH ainda não esteja disponível; 
+        # considere um script de entrypoint como alternativa mais robusta.
+
+      - name: Verificar saúde da aplicação
+        run: |
+          sleep 30
+          URL="https://${{ env.WEBAPP_NAME }}.azurewebsites.net"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "302" ]; then
+            echo "Deploy falhou — status $STATUS"
+            exit 1
+          fi
+          echo "Deploy bem-sucedido: $URL"
