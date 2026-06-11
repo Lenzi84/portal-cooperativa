@@ -127,7 +127,7 @@ jobs:
         run: |
           az webapp ssh --name ${{ env.WEBAPP_NAME }} \
             --resource-group ${{ env.RESOURCE_GROUP }} \
-            --command "python manage.py migrate --noinput" || true
+            --command "python manage.py migrate --noinput && python manage.py criar_superuser" || true
         # O || true evita falha caso o SSH ainda não esteja disponível; 
         # considere um script de entrypoint como alternativa mais robusta.
 

@@ -35,8 +35,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
+command: >
       sh -c "python manage.py migrate --noinput &&
+             python manage.py criar_superuser &&
              python manage.py runserver 0.0.0.0:8000"
 
 volumes:
