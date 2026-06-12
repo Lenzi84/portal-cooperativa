@@ -32,12 +32,12 @@ Aplicação web Django com CRUD de cooperados, autenticação nativa, pipeline C
       │
       ▼
 [Azure Web App for Containers]     ←→  [Azure Database for PostgreSQL]
-  webapp-aula123                         postgres-aula123
+  webapp-lenzi84                         postgres-lenzi84
   porta 8000 (Gunicorn)
       │
       ▼
 [URL Pública]
-  https://webapp-aula123.azurewebsites.net
+  https://webapp-lenzi84.azurewebsites.net
 ```
 
 ---
@@ -81,7 +81,7 @@ az group create \
 # 2. Azure Container Registry
 az acr create \
   --resource-group rg-python-aula \
-  --name acraula123 \
+  --name acrlenzi84 \
   --sku Basic \
   --admin-enabled true
 
