@@ -22,7 +22,4 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Gunicorn como servidor WSGI de produção
-CMD ["gunicorn", "portal_cooperativa.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "2", \
-     "--timeout", "120"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py criar_superuser && gunicorn portal_cooperativa.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120"]
