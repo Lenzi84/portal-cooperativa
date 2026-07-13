@@ -20,6 +20,10 @@ venv/
 .venv/
 env/
 
+# Typecheck
+mypy.ini
+.mypy_cache/
+
 # IDE
 .vscode/
 .idea/
